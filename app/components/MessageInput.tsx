@@ -10,12 +10,12 @@ interface MessageInputProps {
   isLoading: boolean;
 }
 
-export function MessageInput({ 
-  value, 
-  onChange, 
-  onSendMessage, 
-  placeholder, 
-  isLoading 
+export function MessageInput({
+  value,
+  onChange,
+  onSendMessage,
+  placeholder,
+  isLoading
 }: MessageInputProps) {
   const placeholderSuggestions = [
     "Hey Rube, can you fetch my emails",
@@ -46,22 +46,22 @@ export function MessageInput({
   };
 
   return (
-    <div className="input-bar">
-      <div className="flex-1 text-neutral-700">
+    <div className="input-bar bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-2xl shadow-sm transition-colors duration-200">
+      <div className="flex-1 text-neutral-700 dark:text-neutral-200">
         <textarea
           rows={2}
           value={value}
           onChange={(e) => onChange(e.target.value)}
           onKeyDown={handleKeyDown}
-          className="font-inter m-1 w-full resize-none border-0 bg-transparent px-2 sm:px-3 py-2 text-sm leading-relaxed text-gray-900 focus:outline-none focus:ring-0 disabled:cursor-not-allowed disabled:opacity-50"
+          className="font-inter m-1 w-full resize-none border-0 bg-transparent px-2 sm:px-3 py-2 text-sm leading-relaxed text-gray-900 dark:text-white placeholder-neutral-500 dark:placeholder-neutral-400 focus:outline-none focus:ring-0 disabled:cursor-not-allowed disabled:opacity-50"
           placeholder={displayPlaceholder}
         />
       </div>
-      <div className="flex w-full items-center justify-between gap-1 pt-2">
+      <div className="flex w-full items-center justify-between gap-1 pt-2 px-2 pb-2">
         <div className="flex items-center gap-1">
           <button
             type="button"
-            className="flex h-6 w-6 sm:h-8 sm:w-8 items-center justify-center rounded-full transition-all duration-200 hover:bg-gray-100 focus:outline-none bg-gray-50"
+            className="flex h-6 w-6 sm:h-8 sm:w-8 items-center justify-center rounded-full transition-all duration-200 hover:bg-gray-100 dark:hover:bg-neutral-700 focus:outline-none bg-gray-50 dark:bg-neutral-700/50"
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -73,7 +73,7 @@ export function MessageInput({
               strokeWidth="2"
               strokeLinecap="round"
               strokeLinejoin="round"
-              className="lucide lucide-plus text-neutral-600"
+              className="lucide lucide-plus text-neutral-600 dark:text-neutral-400"
             >
               <path d="M5 12h14"></path>
               <path d="M12 5v14"></path>
@@ -83,7 +83,7 @@ export function MessageInput({
         <div className="flex items-center gap-1">
           <button
             type="button"
-            className="flex h-6 w-6 sm:h-8 sm:w-8 items-center justify-center rounded-full transition-all duration-200 focus:outline-none text-gray-600 hover:bg-gray-100 bg-gray-50"
+            className="flex h-6 w-6 sm:h-8 sm:w-8 items-center justify-center rounded-full transition-all duration-200 focus:outline-none text-gray-600 dark:text-neutral-400 hover:bg-gray-100 dark:hover:bg-neutral-700 bg-gray-50 dark:bg-neutral-700/50"
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -106,7 +106,7 @@ export function MessageInput({
             type="button"
             onClick={() => onSendMessage(value)}
             disabled={!value.trim() || isLoading}
-            className="flex h-6 w-6 sm:h-8 sm:w-8 items-center justify-center rounded-full bg-gray-900 text-white transition-all duration-200 hover:bg-gray-700 focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed"
+            className="flex h-6 w-6 sm:h-8 sm:w-8 items-center justify-center rounded-full bg-gray-900 dark:bg-white text-white dark:text-neutral-900 transition-all duration-200 hover:bg-gray-700 dark:hover:bg-neutral-200 focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"

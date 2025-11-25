@@ -1,6 +1,8 @@
-import type { Metadata } from "next";
+'use client';
 import { Inter, Crimson_Text } from "next/font/google";
 import "./globals.css";
+import ThemeProviderWrapper from "./components/ThemeProviderWrapper";
+import { ThemeScript } from "./context/ThemeContext";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -13,22 +15,20 @@ const flecha = Crimson_Text({
   weight: ["600", "600"],
 });
 
-export const metadata: Metadata = {
-  title: "Rube",
-  description: "Get something done today",
-};
-
 export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <body
-        className={`${inter.variable} ${flecha.variable} font-inter antialiased`}
-      >
-        {children}
+    <html lang="en" suppressHydrationWarning>
+      <head>
+        <title>Rube</title>
+        <meta name="description" content="Get something done today" />
+        <ThemeScript />
+      </head>
+      <body className={`${inter.variable} ${flecha.variable} font-inter antialiased`} suppressHydrationWarning>
+        <ThemeProviderWrapper>{children}</ThemeProviderWrapper>
       </body>
     </html>
   );

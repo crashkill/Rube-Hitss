@@ -2,12 +2,13 @@
 
 import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { RubeGraphic } from './components/RubeGraphic';
-import { Navigation } from './components/Navigation';
+import { Sidebar } from './components/Sidebar';
 import { ChatPage } from './components/ChatPageWithAuth';
-import { AppsPage } from './components/AppsPageWithAuth';
+import { AppsPage } from './components/AppsPageToolRouter';
+import { RecipesPage } from './components/RecipesPage';
+import { UseRubePage } from './components/UseRubePage';
 import { AuthWrapper } from './components/AuthWrapper';
-import { UserMenu } from './components/UserMenu';
+import { LanguageProvider } from './context/LanguageContext';
 
 function HomeContent() {
   const searchParams = useSearchParams()
@@ -15,7 +16,7 @@ function HomeContent() {
 
   useEffect(() => {
     const tab = searchParams.get('tab')
-    if (tab && ['chat', 'apps'].includes(tab)) {
+    if (tab && ['chat', 'apps', 'recipes', 'use-rube'].includes(tab)) {
       setActiveTab(tab)
     }
   }, [searchParams])
@@ -26,34 +27,34 @@ function HomeContent() {
         return <ChatPage />;
       case 'apps':
         return <AppsPage />;
+      case 'recipes':
+        return <RecipesPage />;
+      case 'use-rube':
+        return <UseRubePage />;
       default:
         return <ChatPage />;
     }
   };
 
   return (
-    <AuthWrapper>
-      {(user) => (
-        <div className="flex flex-col h-screen" style={{ backgroundColor: '#fcfaf9' }}>
-          {/* Fixed Header */}
-          <header className="fixed top-0 left-0 right-0 bg-white border-b border-gray-200 z-30">
-            <div className="flex items-center justify-between px-6 py-4">
-              <div className="flex items-center space-x-3 text-black">
-                <RubeGraphic />
-                <span className="text-xl font-semibold text-gray-900">Rube</span>
-              </div>
-              {user && <UserMenu user={user} />}
-            </div>
-            <Navigation activeTab={activeTab} onTabChange={setActiveTab} />
-          </header>
+    <LanguageProvider>
+      <AuthWrapper>
+        {(user) => {
+          if (!user) return null;
+          return (
+            <div className="flex h-screen bg-white">
+              {/* Sidebar */}
+              <Sidebar activeTab={activeTab} onTabChange={setActiveTab} user={user} />
 
-          {/* Main content with top padding to account for fixed header */}
-          <main className="flex-1 flex flex-col pt-[120px]">
-            {renderContent()}
-          </main>
-        </div>
-      )}
-    </AuthWrapper>
+              {/* Main Content Area */}
+              <main className="flex-1 ml-[260px] flex flex-col h-screen overflow-hidden relative">
+                {renderContent()}
+              </main>
+            </div>
+          );
+        }}
+      </AuthWrapper>
+    </LanguageProvider>
   );
 }
 

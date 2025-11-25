@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { nanoid } from 'nanoid';
 import { User } from '@supabase/supabase-js';
-import { ChatSidebar } from './ChatSidebar';
+import { useSearchParams, useRouter } from 'next/navigation';
 import { ChatMessages } from './ChatMessages';
 import { ChatWelcome } from './ChatWelcome';
 import { MessageInput } from './MessageInput';
@@ -30,7 +30,8 @@ interface ChatContainerProps {
 }
 
 export function ChatContainer({ user: _user }: ChatContainerProps) {
-  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const searchParams = useSearchParams();
+  const router = useRouter();
   const [inputValue, setInputValue] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
@@ -38,11 +39,25 @@ export function ChatContainer({ user: _user }: ChatContainerProps) {
   const [streamingContent, setStreamingContent] = useState('');
   const [streamingToolCalls, setStreamingToolCalls] = useState<ToolCall[]>([]);
 
-  const { conversations, loadConversations } = useConversations();
+  const { loadConversations } = useConversations();
 
   useEffect(() => {
     loadConversations();
   }, [loadConversations]);
+
+  // Handle auto-connection from Apps page
+  useEffect(() => {
+    const connectApp = searchParams.get('connectApp');
+    const appName = searchParams.get('appName');
+
+    if (connectApp && appName) {
+      const message = `Connect my ${appName} account`;
+      handleSendMessage(message);
+
+      // Clean up URL params
+      router.replace('/?tab=chat');
+    }
+  }, [searchParams]);
 
   const loadConversationMessages = async (conversationId: string) => {
     try {
@@ -85,33 +100,6 @@ export function ChatContainer({ user: _user }: ChatContainerProps) {
       .join(', ');
 
     await handleSendMessage(`I've provided the following inputs: ${inputSummary}. Please proceed with the connection.`);
-  };
-
-  const handleDeleteConversation = async (conversationId: string) => {
-    if (!confirm('Are you sure you want to delete this conversation?')) {
-      return;
-    }
-
-    try {
-      const response = await fetch(`/api/conversations/${conversationId}`, {
-        method: 'DELETE',
-      });
-
-      if (response.ok) {
-        // If we deleted the current conversation, start a new chat
-        if (conversationId === currentConversationId) {
-          startNewChat();
-        }
-        // Reload conversations list
-        loadConversations();
-      } else {
-        console.error('Failed to delete conversation');
-        alert('Failed to delete conversation');
-      }
-    } catch (error) {
-      console.error('Error deleting conversation:', error);
-      alert('Error deleting conversation');
-    }
   };
 
   const handleSendMessage = async (message: string) => {
@@ -257,45 +245,9 @@ export function ChatContainer({ user: _user }: ChatContainerProps) {
   const showWelcomeScreen = messages.length === 0 && !isLoading;
 
   return (
-    <div className="flex-1 flex relative" style={{ backgroundColor: '#fcfaf9' }}>
-      {/* Sidebar */}
-      <ChatSidebar
-        conversations={conversations}
-        currentConversationId={currentConversationId}
-        onSelectConversation={loadConversationMessages}
-        onNewChat={startNewChat}
-        onDeleteConversation={handleDeleteConversation}
-        sidebarOpen={sidebarOpen}
-        onToggleSidebar={setSidebarOpen}
-      />
-
-      {/* Sidebar toggle button - always visible */}
-      <div className="fixed top-[120px] left-4 z-40">
-        <button
-          onClick={() => setSidebarOpen(!sidebarOpen)}
-          className="p-2 hover:bg-gray-100 rounded"
-          aria-label="Toggle sidebar"
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="16"
-            height="16"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            className="text-gray-900"
-          >
-            <rect width="18" height="18" x="3" y="3" rx="2" ry="2" />
-            <line x1="9" x2="9" y1="3" y2="21" />
-          </svg>
-        </button>
-      </div>
-
+    <div className="flex-1 flex relative h-full bg-[#FBFAF9] dark:bg-neutral-900 transition-colors duration-200">
       {/* Main content */}
-      <div className="flex-1 flex flex-col">
+      <div className="flex-1 flex flex-col h-full">
 
         {/* Welcome screen or chat messages */}
         <div className="flex-1 flex flex-col overflow-hidden">
@@ -319,7 +271,7 @@ export function ChatContainer({ user: _user }: ChatContainerProps) {
 
         {/* Input bar at bottom - only show when not on welcome screen */}
         {!showWelcomeScreen && (
-          <div className="p-3 sm:p-4" style={{ backgroundColor: '#fcfaf9' }}>
+          <div className="p-3 sm:p-4 bg-[#fcfaf9] dark:bg-neutral-900 transition-colors duration-200">
             <div className="max-w-3xl mx-auto">
               <MessageInput
                 value={inputValue}
