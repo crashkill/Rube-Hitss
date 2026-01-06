@@ -45,22 +45,27 @@
 ## Arquitetura de Componentes
 - **Frontend:** Next.js 15 (App Router), React 19, Tailwind CSS.
 - **Backend:** Next.js API Routes (Serverless).
-- **Banco de Dados:** Supabase (PostgreSQL).
-- **Auth:** Supabase Auth.
+- **Banco de Dados:** Supabase Imperial (Self-Hosted via Coolify).
+- **Auth:** Supabase Auth (Imperial).
 - **IA/Agente:** Vercel AI SDK + OpenAI.
 - **Integração:** Composio SDK + MCP.
+- **Infraestrutura:** Coolify (Nixpacks).
 
 ## Stack Sugerida
 - Next.js 15
 - TypeScript
 - Tailwind CSS
-- Supabase
+- Supabase (Self-Hosted)
 - Composio SDK
 - Vercel AI SDK
+- Coolify
 
 ## Roadmap
 - [x] Configuração Inicial e Documentação (PRD/README).
-- [ ] Análise de Lacunas (Local vs Comercial).
+- [x] Análise de Lacunas (Local vs Comercial).
+- [x] Migração para Supabase Imperial.
+- [x] Implementação de Receitas (CRUD + Chat Integration).
+- [x] Deploy Automatizado via Coolify.
 - [ ] Implementação de Melhorias de UI/UX.
 - [ ] Refinamento do Tool Router e MCP.
-- [ ] Testes e Validação.
+- [ ] Testes e Validação Contínua.

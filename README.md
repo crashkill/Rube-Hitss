@@ -165,6 +165,32 @@ npm run build
 npm start
 ```
 
+## Deployment (Imperial Infrastructure)
+
+The project is configured for self-hosted deployment using **Coolify**.
+
+### Prequisites
+- Coolify Instance (`https://fsw-hitss.duckdns.org` context `hitss-prod`)
+- Supabase Imperial Instance (`https://supabase.fsw-hitss.duckdns.org`)
+
+### Deploy via CLI
+We use `coolify-cli` for automated deployments.
+
+```powershell
+# 1. Connect to Context
+coolify context add hitss-prod https://fsw-hitss.duckdns.org/ "1|V0Oau51fmpx8HwOhVOd4JG26zYmiuhN7NopnXVUFb1cb7656" --default
+
+# 2. Deploy
+coolify deploy name RubeApp
+```
+
+**Environment Variables Required in Coolify:**
+- `NEXT_PUBLIC_SUPABASE_URL`
+- `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+- `COMPOSIO_API_KEY`
+- `NEXT_PUBLIC_APP_URL` (Domain, e.g. `https://rube.fsw-hitss.duckdns.org`)
+
+
 ## Project Structure
 
 ```
