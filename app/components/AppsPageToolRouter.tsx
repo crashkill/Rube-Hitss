@@ -1,7 +1,7 @@
 // Composio ToolRouter Apps Page
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { AuthWrapper } from './AuthWrapper';
 import { User } from '@supabase/supabase-js';
 import { useLanguage } from '../context/LanguageContext';
@@ -29,6 +29,7 @@ function AppsPageContent({ user }: { user: User }) {
     const [loading, setLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState('');
     const [activeTab, setActiveTab] = useState<'my-apps' | 'marketplace'>('marketplace');
+    const [selectedCategory, setSelectedCategory] = useState<string>('all');
 
     useEffect(() => {
         fetchAllApps();
@@ -149,13 +150,26 @@ function AppsPageContent({ user }: { user: User }) {
         );
     };
 
+    // Extract unique categories from apps
+    const categories = useMemo(() => {
+        const categorySet = new Set<string>();
+        apps.forEach(app => {
+            if (app.category) {
+                categorySet.add(app.category);
+            }
+        });
+        const sortedCategories = Array.from(categorySet).sort();
+        return ['all', ...sortedCategories];
+    }, [apps]);
+
     const filteredApps = apps.filter(app => {
         const matchesSearch = app.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
             app.description.toLowerCase().includes(searchQuery.toLowerCase());
+        const matchesCategory = selectedCategory === 'all' || app.category === selectedCategory;
         if (activeTab === 'my-apps') {
-            return matchesSearch && isAppConnected(app.slug);
+            return matchesSearch && matchesCategory && isAppConnected(app.slug);
         }
-        return matchesSearch;
+        return matchesSearch && matchesCategory;
     });
 
     if (loading) {
@@ -198,7 +212,7 @@ function AppsPageContent({ user }: { user: User }) {
                         </div>
                     </div>
 
-                    <div className="flex items-center gap-4 mb-6">
+                    <div className="flex items-center gap-4 mb-4">
                         <div className="relative flex-1">
                             <svg className="w-5 h-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-neutral-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m29-5a7 7 0 11-14 0 7 7 0 0114 0z" />
@@ -212,6 +226,24 @@ function AppsPageContent({ user }: { user: User }) {
                             />
                         </div>
                     </div>
+
+                    {/* Category Filter Pills */}
+                    {categories.length > 1 && (
+                        <div className="flex items-center gap-2 mb-6 overflow-x-auto pb-2 scrollbar-hide">
+                            {categories.map((category) => (
+                                <button
+                                    key={category}
+                                    onClick={() => setSelectedCategory(category)}
+                                    className={`px-3 py-1.5 rounded-full text-sm font-medium whitespace-nowrap transition-all ${selectedCategory === category
+                                            ? 'bg-neutral-900 dark:bg-white text-white dark:text-neutral-900'
+                                            : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-200 dark:hover:bg-neutral-700'
+                                        }`}
+                                >
+                                    {category === 'all' ? t('apps.allCategories') || 'All' : category}
+                                </button>
+                            ))}
+                        </div>
+                    )}
 
                     <div className="space-y-0">
                         {filteredApps.map((app) => {

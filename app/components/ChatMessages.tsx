@@ -74,10 +74,8 @@ export function ChatMessages({
 
                 {/* Message content */}
                 <div
-                  className={`${
-                    message.sender === 'user' ? 'bg-stone-200 text-black' : 'text-black'
-                  } rounded-lg p-3`}
-                  style={message.sender === 'assistant' ? { backgroundColor: '#fcfaf9' } : {}}
+                  className={`${message.sender === 'user' ? 'bg-primary text-primary-foreground' : 'bg-muted/50 text-foreground'
+                    } rounded-lg p-3`}
                 >
                   {message.sender === 'assistant' ? (
                     <MarkdownContent content={message.content} />
@@ -129,11 +127,11 @@ export function ChatMessages({
 
                 {/* Streaming text content */}
                 {streamingContent && (
-                  <div className="text-black rounded-lg p-3" style={{ backgroundColor: '#fcfaf9' }}>
+                  <div className="text-foreground rounded-lg p-3 bg-muted/50">
                     <div>
                       <MarkdownContent content={streamingContent} />
                     </div>
-                    <div className="inline-block w-2 h-4 bg-gray-600 animate-pulse ml-1"></div>
+                    <div className="inline-block w-2 h-4 bg-muted-foreground animate-pulse ml-1"></div>
                   </div>
                 )}
 
@@ -155,15 +153,15 @@ export function ChatMessages({
 
                 {/* Loading indicator - only show if no content yet */}
                 {!streamingContent && streamingToolCalls.length === 0 && (
-                  <div className="rounded-lg p-3" style={{ backgroundColor: '#fcfaf9' }}>
+                  <div className="rounded-lg p-3 bg-muted/50">
                     <div className="flex items-center gap-1">
-                      <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
+                      <div className="w-2 h-2 bg-muted-foreground rounded-full animate-bounce"></div>
                       <div
-                        className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
+                        className="w-2 h-2 bg-muted-foreground rounded-full animate-bounce"
                         style={{ animationDelay: '0.1s' }}
                       ></div>
                       <div
-                        className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
+                        className="w-2 h-2 bg-muted-foreground rounded-full animate-bounce"
                         style={{ animationDelay: '0.2s' }}
                       ></div>
                     </div>

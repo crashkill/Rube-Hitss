@@ -41,7 +41,7 @@ export async function GET(request: NextRequest) {
           // Map to frontend-friendly format with appName
           return {
             id: accountDetails.id,
-            appName: accountDetails.toolkit?.slug || accountDetails.appName,
+            appName: accountDetails.toolkit?.slug || 'unknown',
             status: accountDetails.status,
             createdAt: accountDetails.createdAt || new Date().toISOString()
           };
@@ -49,7 +49,7 @@ export async function GET(request: NextRequest) {
           console.error('Error fetching account details for', account.id, ':', error);
           return {
             id: account.id,
-            appName: account.appName,
+            appName: account.toolkit?.slug || 'unknown',
             status: 'UNKNOWN',
             createdAt: new Date().toISOString()
           };

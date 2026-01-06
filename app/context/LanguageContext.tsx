@@ -17,6 +17,7 @@ const translations = {
         'sidebar.recipes': 'Recipes',
         'sidebar.useRube': 'Use Rube',
         'sidebar.recents': 'Recents',
+        'sidebar.noRecents': 'No recent conversations',
         'sidebar.admin': 'Admin',
         'sidebar.language': 'Language',
         'sidebar.profile': 'Profile',
@@ -29,6 +30,7 @@ const translations = {
         'apps.connect': 'Connect',
         'apps.manage': 'Manage',
         'apps.disconnect': 'Disconnect',
+        'apps.allCategories': 'All',
         'apps.connectViaChat': 'Connect via Chat',
         'apps.howTo': 'How to Connect Apps',
         'apps.howToDesc': 'Go to the Chat tab and ask: "Connect my Gmail account". The Tool Router will handle authentication automatically!',
@@ -46,6 +48,14 @@ const translations = {
         'admin.title': 'Administration',
         'admin.languageSettings': 'Language Settings',
         'admin.selectLanguage': 'Select Interface Language',
+
+        'sidebar.library': 'Library',
+        'library.title': 'Explore Recipes',
+        'library.subtitle': 'Automate everyday tasks with premade workflows',
+        'library.searchPlaceholder': 'Search workflows...',
+        'library.tryButton': 'Try',
+        'library.whatIsRecipe': "What's a Recipe?",
+        'library.watchDemo': 'Watch Demo',
     },
     pt: {
         'sidebar.newChat': 'Novo chat',
@@ -53,6 +63,7 @@ const translations = {
         'sidebar.recipes': 'Receitas',
         'sidebar.useRube': 'Usar Rube',
         'sidebar.recents': 'Recentes',
+        'sidebar.noRecents': 'Nenhuma conversa recente',
         'sidebar.admin': 'Administração',
         'sidebar.language': 'Idioma',
         'sidebar.profile': 'Perfil',
@@ -65,6 +76,7 @@ const translations = {
         'apps.connect': 'Conectar',
         'apps.manage': 'Gerenciar',
         'apps.disconnect': 'Desconectar',
+        'apps.allCategories': 'Todos',
         'apps.connectViaChat': 'Conectar via Chat',
         'apps.howTo': 'Como Conectar Apps',
         'apps.howToDesc': 'Vá para a aba Chat e peça: "Conecte minha conta do Gmail". O Tool Router gerencia a autenticação automaticamente!',
@@ -82,6 +94,14 @@ const translations = {
         'admin.title': 'Administração',
         'admin.languageSettings': 'Configurações de Idioma',
         'admin.selectLanguage': 'Selecione o Idioma da Interface',
+
+        'sidebar.library': 'Biblioteca',
+        'library.title': 'Explorar Receitas',
+        'library.subtitle': 'Automatize tarefas do dia a dia com fluxos prontos',
+        'library.searchPlaceholder': 'Buscar fluxos...',
+        'library.tryButton': 'Testar',
+        'library.whatIsRecipe': 'O que é uma Receita?',
+        'library.watchDemo': 'Ver Demo',
     }
 };
 

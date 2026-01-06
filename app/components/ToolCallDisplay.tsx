@@ -20,9 +20,10 @@ export function ToolCallDisplay({ toolCall }: ToolCallDisplayProps) {
   const getStatusIcon = () => {
     if (toolCall.status === 'running') {
       return (
-        <svg className="w-4 h-4 animate-spin text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-        </svg>
+        <div className="relative flex h-3 w-3">
+          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
+          <span className="relative inline-flex rounded-full h-3 w-3 bg-blue-500"></span>
+        </div>
       );
     }
     if (toolCall.status === 'completed') {
@@ -39,33 +40,28 @@ export function ToolCallDisplay({ toolCall }: ToolCallDisplayProps) {
     );
   };
 
-  const getStatusText = () => {
-    if (toolCall.status === 'running') return 'Running';
-    if (toolCall.status === 'completed') return 'Completed';
-    return 'Error';
-  };
-
   return (
-    <div className="bg-gray-50 border border-gray-200 rounded-lg p-3 my-2 max-w-2xl">
+    <div className="glass-card rounded-xl border border-neutral-200/50 dark:border-neutral-800/50 overflow-hidden my-3 max-w-2xl transition-all duration-200 hover:shadow-md">
       <button
         onClick={() => setIsExpanded(!isExpanded)}
-        className="w-full flex items-center justify-between text-left"
+        className="w-full flex items-center justify-between p-3 bg-white/50 dark:bg-neutral-900/50 hover:bg-white/80 dark:hover:bg-neutral-900/80 transition-colors"
       >
-        <div className="flex items-center gap-2">
-          {getStatusIcon()}
-          <span className="font-medium text-gray-900 text-sm">
-            {toolCall.name}
-          </span>
-          <span className={`text-xs px-2 py-0.5 rounded ${
-            toolCall.status === 'running' ? 'bg-blue-100 text-blue-700' :
-            toolCall.status === 'completed' ? 'bg-green-100 text-green-700' :
-            'bg-red-100 text-red-700'
-          }`}>
-            {getStatusText()}
-          </span>
+        <div className="flex items-center gap-3">
+          <div className="flex items-center justify-center w-6 h-6 rounded-full bg-neutral-100 dark:bg-neutral-800">
+            {getStatusIcon()}
+          </div>
+          <div className="flex flex-col items-start">
+            <span className="font-semibold text-sm text-neutral-900 dark:text-neutral-100 font-mono">
+              {toolCall.name}
+            </span>
+            <span className="text-xs text-neutral-500 dark:text-neutral-400">
+              {toolCall.status === 'running' ? 'Executing...' :
+                toolCall.status === 'completed' ? 'Completed' : 'Failed'}
+            </span>
+          </div>
         </div>
         <svg
-          className={`w-4 h-4 text-gray-500 transition-transform ${isExpanded ? 'rotate-180' : ''}`}
+          className={`w-4 h-4 text-neutral-400 transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`}
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"
@@ -75,24 +71,28 @@ export function ToolCallDisplay({ toolCall }: ToolCallDisplayProps) {
       </button>
 
       {isExpanded && (
-        <div className="mt-3 space-y-2 text-xs">
-          {/* Arguments */}
-          <div>
-            <div className="font-semibold text-gray-700 mb-1">ARGS:</div>
-            <pre className="bg-white p-2 rounded border border-gray-200 overflow-x-auto text-gray-800">
-              {JSON.stringify(toolCall.input, null, 2)}
-            </pre>
+        <div className="p-3 bg-neutral-50/50 dark:bg-neutral-950/30 border-t border-neutral-200/50 dark:border-neutral-800/50 text-xs font-mono">
+          {/* Input Arguments */}
+          <div className="mb-3">
+            <div className="text-xs font-bold text-neutral-500 uppercase tracking-wider mb-1.5">Input</div>
+            <div className="bg-white dark:bg-neutral-900 rounded-lg border border-neutral-200 dark:border-neutral-800 p-2 overflow-x-auto">
+              <pre className="text-neutral-700 dark:text-neutral-300">
+                {JSON.stringify(toolCall.input, null, 2)}
+              </pre>
+            </div>
           </div>
 
-          {/* Result */}
+          {/* Output Result */}
           {toolCall.output !== undefined && (
             <div>
-              <div className="font-semibold text-gray-700 mb-1">RESULT:</div>
-              <pre className="bg-white p-2 rounded border border-gray-200 overflow-x-auto text-gray-800 max-h-64 overflow-y-auto">
-                {typeof toolCall.output === 'string'
-                  ? toolCall.output
-                  : JSON.stringify(toolCall.output, null, 2)}
-              </pre>
+              <div className="text-xs font-bold text-neutral-500 uppercase tracking-wider mb-1.5">Output</div>
+              <div className="bg-white dark:bg-neutral-900 rounded-lg border border-neutral-200 dark:border-neutral-800 p-2 overflow-x-auto max-h-64 overflow-y-auto custom-scrollbar">
+                <pre className="text-neutral-700 dark:text-neutral-300">
+                  {typeof toolCall.output === 'string'
+                    ? toolCall.output
+                    : JSON.stringify(toolCall.output, null, 2)}
+                </pre>
+              </div>
             </div>
           )}
         </div>

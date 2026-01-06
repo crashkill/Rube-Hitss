@@ -69,8 +69,8 @@ export async function POST(request: NextRequest) {
         }
 
         // Find the auth config for this toolkit (app)
-        const authConfig = authConfigs.find((config: any) =>
-            config.toolkit?.slug?.toLowerCase() === appSlug.toLowerCase()
+        const authConfig = (authConfigs as Array<{ id: string; toolkit?: { slug?: string }; name?: string }>).find(
+            (config) => config.toolkit?.slug?.toLowerCase() === appSlug.toLowerCase()
         );
 
         if (!authConfig) {

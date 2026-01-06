@@ -45,16 +45,25 @@ export function ChatContainer({ user: _user }: ChatContainerProps) {
     loadConversations();
   }, [loadConversations]);
 
-  // Handle auto-connection from Apps page
+  // Handle auto-connection from Apps page and recipe prompts from Library
   useEffect(() => {
     const connectApp = searchParams.get('connectApp');
     const appName = searchParams.get('appName');
+    const recipePrompt = searchParams.get('prompt');
+    const recipeId = searchParams.get('recipe');
 
+    // Handle app connection request
     if (connectApp && appName) {
       const message = `Connect my ${appName} account`;
       handleSendMessage(message);
+      router.replace('/?tab=chat');
+      return;
+    }
 
-      // Clean up URL params
+    // Handle recipe execution
+    if (recipePrompt && recipeId) {
+      const decodedPrompt = decodeURIComponent(recipePrompt);
+      handleSendMessage(decodedPrompt);
       router.replace('/?tab=chat');
     }
   }, [searchParams]);

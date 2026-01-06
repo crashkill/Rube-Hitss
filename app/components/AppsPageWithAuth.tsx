@@ -60,6 +60,25 @@ function AppsPageContent({ user: _user }: { user: User }) {
     // Refresh immediately when component mounts
     refreshConnections();
 
+    // Check for callback parameters in URL
+    const params = new URLSearchParams(window.location.search);
+    const status = params.get('status');
+    const connectedAccountId = params.get('connectedAccountId');
+
+    if (status === 'success' && connectedAccountId) {
+      console.log('Detected successful connection callback:', connectedAccountId);
+      // Notify opener if this is a popup
+      if (window.opener) {
+        window.opener.postMessage({ type: 'connectionSuccess', detail: { connectedAccountId } }, '*');
+        window.close();
+      } else {
+        // Just refresh if in same window
+        refreshConnections();
+        // Clear params to avoid loop/confusion
+        window.history.replaceState({}, '', window.location.pathname);
+      }
+    }
+
     // Listen for connection success events from callback page
     const handleConnectionSuccess = (event: CustomEvent) => {
       console.log('Connection success event received:', event.detail);
@@ -68,13 +87,25 @@ function AppsPageContent({ user: _user }: { user: User }) {
       }, 1000); // Small delay to ensure backend is updated
     };
 
+    // Listen for postMessage from popup
+    const handleMessage = (event: MessageEvent) => {
+      if (event.data?.type === 'connectionSuccess') {
+        console.log('Received connection success message from popup:', event.data.detail);
+        setTimeout(() => {
+          refreshConnections();
+        }, 1000);
+      }
+    };
+
     // Also refresh when the window gains focus (user returns from OAuth popup)
     window.addEventListener('focus', refreshConnections);
     window.addEventListener('connectionSuccess', handleConnectionSuccess as EventListener);
-    
+    window.addEventListener('message', handleMessage);
+
     return () => {
       window.removeEventListener('focus', refreshConnections);
       window.removeEventListener('connectionSuccess', handleConnectionSuccess as EventListener);
+      window.removeEventListener('message', handleMessage);
     };
   }, []);
 
@@ -103,22 +134,22 @@ function AppsPageContent({ user: _user }: { user: User }) {
         }),
         fetch('/api/apps/connection')
       ]);
-      
+
       if (!authConfigsResponse.ok) {
         throw new Error('Failed to fetch auth configs');
       }
-      
+
       const authConfigsData: AuthConfigResponse = await authConfigsResponse.json();
-      const connectionData = connectionStatusResponse.ok 
-        ? await connectionStatusResponse.json() 
+      const connectionData = connectionStatusResponse.ok
+        ? await connectionStatusResponse.json()
         : { connectedAccounts: [] };
-      
+
       console.log('Received auth configs:', authConfigsData.items?.length || 0, 'items');
       console.log('Received connection data:', connectionData.connectedAccounts?.length || 0, 'accounts');
-      
+
       // Store connected accounts for use in connection status
       setConnectedAccounts(connectionData.connectedAccounts || []);
-      
+
       if (!authConfigsData.items || authConfigsData.items.length === 0) {
         console.log('No auth configs found');
         setToolkits([]);
@@ -126,41 +157,41 @@ function AppsPageContent({ user: _user }: { user: User }) {
       }
 
       // Filter auth configs to only include those with 'toolRouter' in their name
-      const toolRouterConfigs = authConfigsData.items.filter(config => 
+      const toolRouterConfigs = authConfigsData.items.filter(config =>
         config.name && config.name.toLowerCase().includes('toolrouter')
       );
-      
+
       console.log('Filtered toolRouter configs:', toolRouterConfigs);
-      
+
       if (toolRouterConfigs.length === 0) {
         console.log('No toolRouter auth configs found');
         setToolkits([]);
         return;
       }
-      
+
       // Step 2: For each filtered auth config, fetch the toolkit details
       const appPromises = toolRouterConfigs.map(async (authConfig) => {
         try {
           // Handle both string and object formats for toolkit
-          const toolkitSlug = typeof authConfig.toolkit === 'string' 
-            ? authConfig.toolkit 
+          const toolkitSlug = typeof authConfig.toolkit === 'string'
+            ? authConfig.toolkit
             : authConfig.toolkit.slug;
-            
+
           console.log(`Fetching toolkit details for: ${toolkitSlug}`);
-          
+
           const toolkitResponse = await fetch('/api/toolkit', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ toolkit: toolkitSlug }),
           });
-          
+
           if (!toolkitResponse.ok) {
             console.warn(`Failed to fetch toolkit details for ${toolkitSlug}`);
             return null;
           }
-          
+
           const toolkitData = await toolkitResponse.json();
-          
+
           return {
             toolkit: {
               slug: toolkitData.slug,
@@ -170,17 +201,17 @@ function AppsPageContent({ user: _user }: { user: User }) {
             authConfig
           } as ConnectedToolkit;
         } catch (error) {
-          const toolkitSlug = typeof authConfig.toolkit === 'string' 
-            ? authConfig.toolkit 
+          const toolkitSlug = typeof authConfig.toolkit === 'string'
+            ? authConfig.toolkit
             : authConfig.toolkit.slug;
           console.warn(`Error fetching toolkit ${toolkitSlug}:`, error);
           return null;
         }
       });
-      
+
       const toolkitResults = await Promise.all(appPromises);
       const validToolkits = toolkitResults.filter((toolkit): toolkit is ConnectedToolkit => toolkit !== null);
-      
+
       console.log('Final toolkits with details:', validToolkits);
       setToolkits(validToolkits);
     } catch (error) {
@@ -193,29 +224,29 @@ function AppsPageContent({ user: _user }: { user: User }) {
 
   const handleConnect = async (toolkit: ConnectedToolkit) => {
     setConnecting(toolkit.toolkit.slug);
-    
+
     try {
       const authConfigId = toolkit.authConfig.id;
-      
+
       const response = await fetch('/api/apps/connection', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          authConfigId, 
-          toolkitSlug: toolkit.toolkit.slug 
+        body: JSON.stringify({
+          authConfigId,
+          toolkitSlug: toolkit.toolkit.slug
         }),
       });
-      
+
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.error || `Failed to create auth link: ${response.status}`);
       }
-      
+
       const connectionRequest = await response.json();
-      
+
       if (connectionRequest.redirectUrl) {
         window.open(connectionRequest.redirectUrl, '_blank');
-        
+
         // Refresh connection status after a short delay to account for the connection
         setTimeout(() => {
           fetchConnectedAccounts();
@@ -223,7 +254,7 @@ function AppsPageContent({ user: _user }: { user: User }) {
       } else {
         console.error('No redirect URL received');
       }
-      
+
     } catch (error) {
       console.error('Error connecting toolkit:', error);
       alert(`Failed to connect to ${toolkit.toolkit.name}: ${error}`);
@@ -234,36 +265,36 @@ function AppsPageContent({ user: _user }: { user: User }) {
 
   const handleDisconnect = async (toolkit: ConnectedToolkit, connectedAccount: ConnectedAccount) => {
     setConnecting(toolkit.toolkit.slug);
-    
+
     try {
       console.log(`Disconnecting ${toolkit.toolkit.name}...`);
-      
+
       const response = await fetch('/api/connectedAccounts/disconnect', {
         method: 'DELETE',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ accountId: connectedAccount.id }),
       });
-      
+
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.error || `Failed to disconnect: ${response.status}`);
       }
-      
+
       const result = await response.json();
       console.log('Disconnect result:', result);
-      
+
       // Immediately update the connected accounts list to remove the disconnected account
-      setConnectedAccounts(prev => 
+      setConnectedAccounts(prev =>
         prev.filter(account => account.id !== connectedAccount.id)
       );
-      
+
       // Also refresh from server to ensure sync
       setTimeout(() => {
         fetchConnectedAccounts();
       }, 500);
-      
+
       console.log(`Successfully disconnected ${toolkit.toolkit.name}`);
-      
+
     } catch (error) {
       console.error('Error disconnecting toolkit:', error);
       alert(`Failed to disconnect ${toolkit.toolkit.name}: ${error}`);
@@ -282,59 +313,48 @@ function AppsPageContent({ user: _user }: { user: User }) {
 
   const getActionButton = (toolkit: ConnectedToolkit) => {
     const isConnecting = connecting === toolkit.toolkit.slug;
-    
-    // Debug logging
-    console.log('Checking connection for toolkit:', toolkit.toolkit.slug);
-    console.log('Available connected accounts:', connectedAccounts.length, 'accounts');
-    
+
     // Check if this toolkit is connected by looking for a connected account with matching toolkit slug
-    const isConnected = connectedAccounts.some(account => 
+    const isConnected = connectedAccounts.some(account =>
       account.toolkit?.slug?.toLowerCase() === toolkit.toolkit.slug.toLowerCase()
     );
-    
+
     // Find the connected account for disconnect functionality
-    const connectedAccount = connectedAccounts.find(account => 
+    const connectedAccount = connectedAccounts.find(account =>
       account.toolkit?.slug?.toLowerCase() === toolkit.toolkit.slug.toLowerCase()
     );
-    
-    console.log('Is connected:', isConnected, 'Connected account:', connectedAccount);
-    
+
     if (isConnecting) {
       return (
-        <button 
-          disabled 
-          className="text-neutral-400 text-sm font-medium flex items-center gap-1 cursor-not-allowed"
+        <button
+          disabled
+          className="w-full py-2 px-3 rounded-lg bg-neutral-100 text-neutral-400 text-sm font-medium flex items-center justify-center gap-2 cursor-not-allowed"
         >
-          Connecting...
           <svg className="w-4 h-4 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
           </svg>
+          Connecting
         </button>
       );
     }
-    
+
     if (isConnected && connectedAccount) {
       return (
-        <button 
+        <button
           onClick={() => handleDisconnect(toolkit, connectedAccount)}
-          className="text-neutral-400 hover:text-neutral-600 text-sm font-medium flex items-center gap-1"
+          className="w-full py-2 px-3 rounded-lg border border-neutral-200 text-neutral-600 hover:bg-neutral-50 hover:text-neutral-900 text-sm font-medium flex items-center justify-center gap-2 transition-all"
         >
-          Disconnect
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-          </svg>
+          <span className="w-2 h-2 rounded-full bg-green-500"></span>
+          Connected
         </button>
       );
     } else {
       return (
-        <button 
+        <button
           onClick={() => handleConnect(toolkit)}
-          className="bg-neutral-900 hover:bg-neutral-800 text-white text-sm font-medium px-4 py-2 rounded-lg flex items-center gap-2 transition-colors"
+          className="w-full py-2 px-3 rounded-lg bg-neutral-900 hover:bg-neutral-800 text-white text-sm font-medium flex items-center justify-center gap-2 transition-all shadow-sm hover:shadow"
         >
           Connect
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
-          </svg>
         </button>
       );
     }
@@ -342,13 +362,15 @@ function AppsPageContent({ user: _user }: { user: User }) {
 
   if (loading) {
     return (
-      <div className="flex-1" style={{ backgroundColor: '#fcfaf9' }}>
-        <div className="max-w-6xl mx-auto p-4 sm:p-6">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 sm:mb-8 gap-4">
-            <h1 className="text-xl sm:text-2xl font-semibold text-neutral-700">Your Apps</h1>
-          </div>
-          <div className="flex items-center justify-center h-64">
-            <div className="text-neutral-600">Loading apps...</div>
+      <div className="flex-1 bg-neutral-50/50">
+        <div className="max-w-7xl mx-auto p-4 sm:p-8">
+          <div className="flex flex-col gap-8">
+            <div className="h-8 w-48 bg-neutral-200 rounded-lg animate-pulse"></div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
+                <div key={i} className="h-48 bg-white rounded-2xl border border-neutral-200 animate-pulse"></div>
+              ))}
+            </div>
           </div>
         </div>
       </div>
@@ -356,81 +378,95 @@ function AppsPageContent({ user: _user }: { user: User }) {
   }
 
   return (
-    <div className="flex-1 flex flex-col" style={{ backgroundColor: '#fcfaf9' }}>
-      <div className="flex-1 overflow-y-auto pb-8">
-        <div className="max-w-6xl mx-auto px-3 py-4 sm:p-6">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 sm:mb-8 gap-3 sm:gap-4">
-            <h1 className="text-lg sm:text-2xl font-semibold text-neutral-700">Your Apps</h1>
-            <div className="relative">
-              <svg className="w-4 h-4 sm:w-5 sm:h-5 absolute left-2.5 sm:left-3 top-1/2 transform -translate-y-1/2 text-neutral-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-              </svg>
-              <input
-                type="text"
-                placeholder="Search apps"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full sm:w-auto pl-8 sm:pl-10 pr-3 sm:pr-4 py-2 sm:py-2.5 border border-stone-200 rounded-lg sm:rounded-xl focus:ring-2 focus:ring-neutral-400 focus:border-transparent outline-none text-sm bg-white text-neutral-700"
-              />
+    <div className="flex-1 flex flex-col bg-neutral-50/50 min-h-screen">
+      <div className="flex-1 overflow-y-auto">
+        <div className="max-w-7xl mx-auto px-4 py-8 sm:px-8">
+          {/* Header Section */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-8 gap-4">
+            <div>
+              <h1 className="text-2xl sm:text-3xl font-bold text-neutral-900 tracking-tight">Integrations</h1>
+              <p className="text-neutral-500 mt-1">Connect your favorite tools to supercharge your AI agent.</p>
+            </div>
+
+            <div className="flex items-center gap-3">
+              <div className="relative group">
+                <svg className="w-5 h-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-neutral-400 group-focus-within:text-neutral-600 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+                <input
+                  type="text"
+                  placeholder="Search apps..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full sm:w-64 pl-10 pr-4 py-2.5 bg-white border border-neutral-200 rounded-xl focus:ring-2 focus:ring-neutral-900/5 focus:border-neutral-900/10 outline-none text-sm text-neutral-700 shadow-sm transition-all placeholder:text-neutral-400"
+                />
+              </div>
+
+              <button
+                onClick={() => setShowConnected(!showConnected)}
+                className={`px-4 py-2.5 rounded-xl text-sm font-medium border transition-all ${showConnected
+                  ? 'bg-neutral-900 text-white border-transparent shadow-md'
+                  : 'bg-white text-neutral-600 border-neutral-200 hover:bg-neutral-50'
+                  }`}
+              >
+                Connected ({connectedAccounts.length})
+              </button>
             </div>
           </div>
 
-          <div className="mb-3 sm:mb-6">
-            <button
-              onClick={() => setShowConnected(!showConnected)}
-              className="text-neutral-600 hover:text-neutral-800 text-xs sm:text-sm font-medium"
-            >
-              Show Connected Apps ({connectedAccounts.length})
-            </button>
-          </div>
-
-          <div className="bg-white rounded-lg sm:rounded-xl border border-stone-200 mb-32" style={{ boxShadow: '0 1px 2px 0 rgba(0,0,0,0.05)' }}>
+          {/* Grid Layout */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6 pb-20">
             {filteredToolkits.length === 0 ? (
-              <div className="p-6 sm:p-12 text-center">
-                <div className="text-neutral-500 text-sm sm:text-base">No toolkits found</div>
+              <div className="col-span-full py-20 text-center">
+                <div className="w-16 h-16 bg-neutral-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <svg className="w-8 h-8 text-neutral-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                </div>
+                <h3 className="text-lg font-medium text-neutral-900">No apps found</h3>
+                <p className="text-neutral-500 mt-1">Try adjusting your search query</p>
               </div>
             ) : (
-              <div className="divide-y divide-stone-200">
-                {filteredToolkits.map((toolkit: ConnectedToolkit) => (
-                  <div key={`${toolkit.toolkit.slug}-${toolkit.authConfig.id}`} className="p-3 sm:p-6 flex flex-col sm:flex-row sm:items-center justify-between hover:bg-stone-50 transition-colors gap-3 sm:gap-0">
-                    <div className="flex items-start sm:items-center gap-2.5 sm:gap-4 min-w-0 flex-1">
-                      <div className="w-8 h-8 sm:w-12 sm:h-12 bg-white border border-gray-200 rounded-md sm:rounded-lg flex items-center justify-center flex-shrink-0">
-                        {toolkit.toolkit.meta.logo ? (
-                          <img
-                            src={toolkit.toolkit.meta.logo}
-                            alt={toolkit.toolkit.name}
-                            className="w-6 h-6 sm:w-8 sm:h-8 object-contain"
-                            onError={(e) => {
-                              // Fallback to letter initial if logo fails to load
-                              const target = e.target as HTMLImageElement;
-                              target.style.display = 'none';
-                              target.nextElementSibling?.classList.remove('hidden');
-                            }}
-                          />
-                        ) : null}
-                        <span className={`text-orange-500 text-sm sm:text-lg font-semibold ${toolkit.toolkit.meta.logo ? 'hidden' : ''}`}>
-                          {getInitial(toolkit.toolkit.name)}
-                        </span>
-                      </div>
-                      <div className="min-w-0 flex-1">
-                        <h3 className="text-sm sm:text-lg font-semibold text-neutral-900 mb-0.5 sm:mb-1">
-                          {toolkit.toolkit.name}
-                        </h3>
-                        <p className="text-neutral-600 text-xs sm:text-sm leading-relaxed break-words line-clamp-2 sm:line-clamp-none">
-                          {toolkit.toolkit.meta.description}
-                        </p>
-                        <div className="mt-1">
-                        </div>
-                      </div>
+              filteredToolkits.map((toolkit: ConnectedToolkit) => (
+                <div
+                  key={`${toolkit.toolkit.slug}-${toolkit.authConfig.id}`}
+                  className="glass-card p-5 rounded-2xl flex flex-col h-full group"
+                >
+                  <div className="flex items-start justify-between mb-4">
+                    <div className="w-12 h-12 bg-white rounded-xl border border-neutral-100 shadow-sm flex items-center justify-center p-2 group-hover:scale-105 transition-transform duration-300">
+                      {toolkit.toolkit.meta.logo ? (
+                        <img
+                          src={toolkit.toolkit.meta.logo}
+                          alt={toolkit.toolkit.name}
+                          className="w-full h-full object-contain"
+                          onError={(e) => {
+                            const target = e.target as HTMLImageElement;
+                            target.style.display = 'none';
+                            target.nextElementSibling?.classList.remove('hidden');
+                          }}
+                        />
+                      ) : null}
+                      <span className={`text-xl font-bold text-neutral-900 ${toolkit.toolkit.meta.logo ? 'hidden' : ''}`}>
+                        {getInitial(toolkit.toolkit.name)}
+                      </span>
                     </div>
-                    <div className="flex-shrink-0 self-start sm:self-center">
-                      <div className="text-xs sm:text-sm">
-                        {getActionButton(toolkit)}
-                      </div>
-                    </div>
+                    {/* Optional: Add status indicator or category icon here */}
                   </div>
-                ))}
-              </div>
+
+                  <div className="flex-1 mb-4">
+                    <h3 className="text-lg font-semibold text-neutral-900 mb-1 group-hover:text-blue-600 transition-colors">
+                      {toolkit.toolkit.name}
+                    </h3>
+                    <p className="text-neutral-500 text-sm leading-relaxed line-clamp-2">
+                      {toolkit.toolkit.meta.description || `Connect ${toolkit.toolkit.name} to your AI agent.`}
+                    </p>
+                  </div>
+
+                  <div className="mt-auto pt-4 border-t border-neutral-100">
+                    {getActionButton(toolkit)}
+                  </div>
+                </div>
+              ))
             )}
           </div>
         </div>
@@ -456,8 +492,8 @@ export function AppsPage() {
             <div className="flex-1 flex items-center justify-center" style={{ backgroundColor: '#fcfaf9' }}>
               <div className="text-center">
                 <h2 className="text-2xl font-bold text-gray-900 mb-4">Please sign in to continue</h2>
-                <a 
-                  href="/auth" 
+                <a
+                  href="/auth"
                   className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-gray-900 hover:bg-gray-700"
                 >
                   Sign In

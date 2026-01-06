@@ -56,7 +56,7 @@ export async function POST(request: NextRequest) {
                 if (attempt < maxAttempts) {
                     await new Promise(resolve => setTimeout(resolve, delayMs));
                 }
-            } catch (error: any) {
+            } catch (error) {
                 console.error(`[waitForConnection] Error checking connection status:`, error);
                 // Continue polling even if there's an error
                 if (attempt < maxAttempts) {

@@ -1,0 +1,63 @@
+Test log entry at 2025-12-08T18:24:26.631Z
+[2025-12-08T18:28:51.834Z] POST /api/chat started 
+[2025-12-08T18:28:52.925Z] User authenticated {
+  "userId": "94394622-e807-4f5d-80cd-79c17f8ed8d5",
+  "email": "fabriciocardosolima@gmail.com"
+}
+[2025-12-08T18:28:54.619Z] Conversation setup done {
+  "conversationId": "e2c30317-d079-4ab0-8a22-184206f9f131"
+}
+[2025-12-08T18:28:54.634Z] Initializing Composio 
+[2025-12-08T18:28:54.675Z] Fetching connections 
+[2025-12-08T18:28:56.309Z] Connections fetched {
+  "count": 7
+}
+[2025-12-08T18:28:56.315Z] Active toolkits []
+[2025-12-08T18:28:56.318Z] Creating ToolRouter session 
+[2025-12-08T18:28:56.657Z] MCP session created {
+  "sessionId": "od3GzhSgN_1HI-9t0NUOw",
+  "url": "https://backend.composio.dev/v3/mcp/tool-router/od3GzhSgN_1HI-9t0NUOw/mcp"
+}
+[2025-12-08T18:28:56.662Z] Creating MCP Client 
+[2025-12-08T18:28:59.127Z] MCP Client created 
+[2025-12-08T18:28:59.137Z] Fetching tools from MCP client 
+[2025-12-08T18:28:59.903Z] Tools fetched {
+  "count": 6
+}
+[2025-12-08T18:28:59.907Z] Starting streamText 
+[2026-01-05T21:55:03.245Z] POST /api/chat started 
+[2026-01-05T21:55:03.250Z] POST /api/chat started 
+[2026-01-05T21:55:03.670Z] User authenticated {
+  "userId": "88579123-e12d-45fc-8c0a-74fe6b8b0537",
+  "email": "fabricio.lima@rube.local"
+}
+[2026-01-05T21:55:03.677Z] Missing env vars [
+  "OPENAI_API_KEY",
+  "COMPOSIO_API_KEY"
+]
+[2026-01-05T21:55:03.689Z] User authenticated {
+  "userId": "88579123-e12d-45fc-8c0a-74fe6b8b0537",
+  "email": "fabricio.lima@rube.local"
+}
+[2026-01-05T21:55:03.691Z] Missing env vars [
+  "OPENAI_API_KEY",
+  "COMPOSIO_API_KEY"
+]
+[2026-01-05T22:30:12.010Z] POST /api/chat started 
+[2026-01-05T22:30:12.044Z] POST /api/chat started 
+[2026-01-05T22:30:14.845Z] User authenticated {
+  "userId": "88579123-e12d-45fc-8c0a-74fe6b8b0537",
+  "email": "fabricio.lima@rube.local"
+}
+[2026-01-05T22:30:14.854Z] Missing env vars [
+  "OPENAI_API_KEY",
+  "COMPOSIO_API_KEY"
+]
+[2026-01-05T22:30:14.899Z] User authenticated {
+  "userId": "88579123-e12d-45fc-8c0a-74fe6b8b0537",
+  "email": "fabricio.lima@rube.local"
+}
+[2026-01-05T22:30:14.922Z] Missing env vars [
+  "OPENAI_API_KEY",
+  "COMPOSIO_API_KEY"
+]

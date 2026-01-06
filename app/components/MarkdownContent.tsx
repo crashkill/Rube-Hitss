@@ -13,12 +13,12 @@ interface MarkdownContentProps {
  */
 export function MarkdownContent({ content }: MarkdownContentProps) {
   return (
-    <div className="font-inter prose prose-sm max-w-none text-black prose-headings:text-black prose-strong:text-black prose-code:text-black prose-pre:bg-gray-100 prose-a:text-blue-600 prose-a:underline prose-a:font-normal hover:prose-a:text-blue-800">
+    <div className="font-inter prose prose-zinc dark:prose-invert max-w-none text-foreground prose-headings:text-foreground prose-p:text-foreground prose-li:text-foreground prose-strong:text-foreground prose-code:text-foreground prose-pre:bg-muted prose-a:text-primary prose-a:underline prose-a:font-normal hover:prose-a:text-primary/80">
       <ReactMarkdown
         remarkPlugins={[remarkGfm]}
         components={{
           pre: ({ children, ...props }) => (
-            <pre className="bg-gray-100 p-3 rounded overflow-x-auto text-sm" {...props}>
+            <pre className="bg-muted p-3 rounded overflow-x-auto text-sm" {...props}>
               {children}
             </pre>
           ),
@@ -26,7 +26,7 @@ export function MarkdownContent({ content }: MarkdownContentProps) {
             const isInline = !className;
             if (isInline) {
               return (
-                <code className="bg-gray-100 px-1 py-0.5 rounded text-sm" {...props}>
+                <code className="bg-muted px-1 py-0.5 rounded text-sm text-foreground" {...props}>
                   {children}
                 </code>
               );
@@ -38,22 +38,22 @@ export function MarkdownContent({ content }: MarkdownContentProps) {
             );
           },
           h1: ({ children, ...props }) => (
-            <h1 className="text-lg font-bold mb-2 text-black" {...props}>
+            <h1 className="text-lg font-bold mb-2 text-foreground" {...props}>
               {children}
             </h1>
           ),
           h2: ({ children, ...props }) => (
-            <h2 className="text-base font-semibold mb-2 text-black" {...props}>
+            <h2 className="text-base font-semibold mb-2 text-foreground" {...props}>
               {children}
             </h2>
           ),
           ul: ({ children, ...props }) => (
-            <ul className="list-disc list-inside space-y-1" {...props}>
+            <ul className="list-disc list-inside space-y-1 text-foreground" {...props}>
               {children}
             </ul>
           ),
           ol: ({ children, ...props }) => (
-            <ol className="list-decimal list-inside space-y-1" {...props}>
+            <ol className="list-decimal list-inside space-y-1 text-foreground" {...props}>
               {children}
             </ol>
           ),
@@ -62,7 +62,7 @@ export function MarkdownContent({ content }: MarkdownContentProps) {
               href={href}
               target="_blank"
               rel="noopener noreferrer"
-              className="underline text-blue-600 hover:text-blue-800"
+              className="underline text-primary hover:text-primary/80"
               {...props}
             >
               {children}
