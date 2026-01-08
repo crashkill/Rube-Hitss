@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 export const runtime = 'nodejs';
 import { streamText, stepCountIs, tool, Tool } from 'ai';
-import { openai } from '@ai-sdk/openai';
+import { createOpenAI } from '@ai-sdk/openai';
 import { experimental_createMCPClient as createMCPClient } from '@ai-sdk/mcp';
 import { StreamableHTTPClientTransport } from '@modelcontextprotocol/sdk/client/streamableHttp.js';
 import { createClient } from '@/app/utils/supabase/server';
@@ -39,8 +39,16 @@ function logDebug(message: string, data?: any) {
   }
 }
 
+
 export async function POST(request: NextRequest) {
   logDebug('POST /api/chat started');
+
+  // Create OpenAI client with custom configuration
+  const openai = createOpenAI({
+    baseURL: process.env.OPENAI_BASE_URL,
+    apiKey: process.env.OPENAI_API_KEY,
+  });
+
 
   try {
     let body;
@@ -252,9 +260,15 @@ export async function POST(request: NextRequest) {
       sessionCache.set(sessionKey, { session: mcpSession, client: mcpClient, tools });
     }
 
+    // Log the configuration being used
+    logDebug('Using AI Configuration', {
+      model: process.env.AI_MODEL || 'gpt-4.1',
+      baseUrl: process.env.OPENAI_BASE_URL || 'default',
+    });
+
     logDebug('Starting streamText');
     const result = await streamText({
-      model: openai('gpt-4.1'),
+      model: openai(process.env.AI_MODEL || 'gpt-4.1'),
       tools,
       system: `You are a helpful AI assistant called Rube that can interact with 500+ applications through Composio's Tool Router.
 

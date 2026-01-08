@@ -6,7 +6,7 @@ import { useLanguage } from '../context/LanguageContext';
 import { useTheme } from '../context/ThemeContext';
 import { useState, useRef, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
+import { createClient } from '@/app/utils/supabase/client';
 import { useConversations } from '../hooks/useConversations';
 
 interface SidebarProps {
@@ -22,7 +22,7 @@ export function Sidebar({ activeTab, onTabChange, user }: SidebarProps) {
     const menuRef = useRef<HTMLDivElement>(null);
     const router = useRouter();
     const searchParams = useSearchParams();
-    const supabase = createClientComponentClient();
+    const supabase = createClient();
     const { conversations, loadConversations } = useConversations();
 
     // Load conversations on mount
