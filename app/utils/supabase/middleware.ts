@@ -28,7 +28,13 @@ export async function updateSession(request: NextRequest) {
   )
 
   // refreshing the auth token
-  await supabase.auth.getUser()
+  try {
+    await supabase.auth.getUser()
+  } catch (e) {
+    // If auth fails (e.g. invalid cookie), we just ignore it and let the user be anonymous
+    // This prevents the application from crashing due to malformed cookies
+    console.error('Middleware Auth Error:', e)
+  }
 
   return supabaseResponse
 }
