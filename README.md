@@ -36,7 +36,7 @@ Open Rube is built with modern web technologies and leverages cutting-edge AI fr
 - **Backend**: Next.js API Routes (serverless)
 - **Database**: Supabase (PostgreSQL)
 - **Authentication**: Supabase Auth
-- **AI Framework**: Vercel AI SDK with OpenAI GPT-5
+- **AI Framework**: Vercel AI SDK with OpenAI GPT-5 or **Ollama**
 - **Tool Integration**: Composio with Tool Router and MCP (Model Context Protocol)
 
 ### Architecture Components
@@ -110,8 +110,10 @@ Before you begin, ensure you have:
    # Composio
    COMPOSIO_API_KEY=your_composio_api_key_here
    
-   # OpenAI
-   OPENAI_API_KEY=your_openai_api_key_here
+   # OpenAI / Ollama
+   OPENAI_API_KEY=your_openai_api_key_here (or 'ollama')
+   OPENAI_BASE_URL=https://your-ollama-instance/v1 (optional)
+   AI_MODEL=llama3.2:3b (optional)
    
    # Supabase
    NEXT_PUBLIC_SUPABASE_URL=your_supabase_project_url

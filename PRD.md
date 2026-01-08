@@ -11,7 +11,7 @@
 - Usuários do Composio que buscam uma interface web customizável.
 
 ## Funcionalidades Principais
-1.  **Interface de Chat com IA:** Suporte a GPT-4/GPT-5 com streaming em tempo real.
+1.  **Interface de Chat com IA:** Suporte a GPT-4/GPT-5 e **Ollama (Self-Hosted)** com streaming em tempo real.
 2.  **Tool Router (Composio):** Descoberta e execução automática de ferramentas para 500+ apps.
 3.  **Protocolo MCP:** Suporte completo ao Model Context Protocol para integração com clientes e ferramentas.
 4.  **Gerenciamento de Autenticação:** Conexão OAuth segura via Supabase e Composio.
@@ -46,8 +46,8 @@
 - **Frontend:** Next.js 15 (App Router), React 19, Tailwind CSS.
 - **Backend:** Next.js API Routes (Serverless).
 - **Banco de Dados:** Supabase Imperial (Self-Hosted via Coolify).
-- **Auth:** Supabase Auth (Imperial).
-- **IA/Agente:** Vercel AI SDK + OpenAI.
+- **Auth:** Supabase Auth (Imperial - SSR).
+- **IA/Agente:** Vercel AI SDK + OpenAI / Ollama (Self-Hosted).
 - **Integração:** Composio SDK + MCP.
 - **Infraestrutura:** Coolify (Nixpacks).
 
@@ -58,6 +58,7 @@
 - Supabase (Self-Hosted)
 - Composio SDK
 - Vercel AI SDK
+- Ollama (LLM Local/Privado)
 - Coolify
 
 ## Roadmap
